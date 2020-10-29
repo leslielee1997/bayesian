@@ -58,7 +58,7 @@ def corssFeatureExtract(img):  # 笔划密度降维
 
 
 def transdata(dic, k, c):  # k为特征数 16 ,c为样本类别
-    l = len(dic)  # 样本数 200
+    l = len(dic)
     data = {}
     buff = []
     clist = []
@@ -76,7 +76,7 @@ def transdata(dic, k, c):  # k为特征数 16 ,c为样本类别
     return data
 
 
-def datamerge(dic1, dic2):  # dic1与dic2特征数必须一致
+def datamerge(dic1, dic2):
     data = {}
     data.update(dic1)
     k = len(dic2)
@@ -93,16 +93,22 @@ def relation():
         rel.append(tup)
     return rel
 
-def predict(di,c):
-    print('给定测试集为:',c)
+
+def predict(di, c):
     l = len(di)
+    count = 0
     for i in range(l):
         pr = c_infer.query(
             variables=['c'],
-            evidence={'x1': di[i][0], 'x2': di[i][1], 'x3': di[i][2], 'x4': di[i][3], 'x5': di[i][4], 'x6': di[i][5], 'x7': di[i][6], 'x8': di[i][7], 'x9': di[i][8], 'x10': di[i][9], 'x11': di[i][10],
-                      'x12':di[i][11], 'x13': di[i][12], 'x14': di[i][13], 'x15': di[i][14], 'x16': di[i][15] }
+            evidence={'x1': di[i][0], 'x2': di[i][1], 'x3': di[i][2], 'x4': di[i][3], 'x5': di[i][4], 'x6': di[i][5],
+                      'x7': di[i][6], 'x8': di[i][7], 'x9': di[i][8], 'x10': di[i][9], 'x11': di[i][10],
+                      'x12': di[i][11], 'x13': di[i][12], 'x14': di[i][13], 'x15': di[i][14], 'x16': di[i][15]}
         )
-        print(pr)
+        print('第'+str(i+1)+'个样本预测概率：',(pr))
+        if(pr.values[0] > 0.5):
+            count += 1
+    print('\n给定测试集为:', c)
+    print('预测为0率: {:.2f}%'.format(count / l * 100))
 
 if __name__ == "__main__":
     data0 = dataread(trainpath0)
@@ -128,6 +134,8 @@ if __name__ == "__main__":
     model = BayesianModel(relation())
     pe = ParameterEstimator(model, traindata)
     mle = MaximumLikelihoodEstimator(model, traindata)
+    # print(pe.state_counts('x1')) #x1的频数
     model.fit(traindata, estimator=MaximumLikelihoodEstimator)
+    # print(mle.estimate_cpd('x1')) #x1的cpd
     c_infer = VariableElimination(model)
-    predict(newtest0,'0')
+    predict(newtest0, '0')
